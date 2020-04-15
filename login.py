@@ -3,6 +3,7 @@
 
 import tkinter as tk
 import mysql.connector
+import hashlib
 from PIL import Image, ImageTk
 from dominio.entidades import *
 from menu.principal import *
@@ -62,23 +63,33 @@ class MainWindow(Usuario):
             print("connection successfully")
 
     def login(self):
+        global valid
         self.connecting()
         user_name = self.username.get()
         password = self.password.get()
-        query = "SELECT * FROM usuarios WHERE username = %s and password = %s"
-        get_data = (user_name, password)
+        password = self.password.get().encode('utf-8')
+        ####HASH##
+        hash_pass = hashlib.sha3_256()
+        hash_security = hash_pass.update(password)
+        hash_security_two = hash_pass.hexdigest()
+        query = "SELECT * FROM usuario WHERE username = %s and password = %s"
+        get_data = (user_name, hash_security_two)
         self.mysqlcursor.execute(query, get_data)
         validate = self.mysqlcursor.fetchall()
-        if validate:
-            messagebox.showinfo(title="Login Successful", message='Correct username and password')
-            main.destroy()
+        for val in validate:
+            for valid in val:
+                pass
+        try:
+            if hash_pass.hexdigest() == valid:
+                if validate:
+                    messagebox.showinfo(title="Login Successful", message='Correct username and password')
+                    main.destroy()
 
-            ####MENU PRINCIPAL####
-            main_p = tk.Tk()
-            window_p = MainWindowP(main_p)
-            main_p.mainloop()
-
-        else:
+                    ####MENU PRINCIPAL####
+                    main_p = tk.Tk()
+                    window_p = MainWindowP(main_p)
+                    main_p.mainloop()
+        except NameError as error:
             messagebox.showerror(title="Incorrect Login", message='Incorrect user or password')
 
     def registry(self):
@@ -117,9 +128,12 @@ class MainWindow(Usuario):
         self.connecting()
         email = self.email.get()
         user_name = self.username.get()
-        password = self.password.get()
-        query = "INSERT INTO usuarios (email,username,password) values (%s, %s, %s)"
-        get_data = (email, user_name, password)
+        password = self.password.get().encode('utf-8')
+        hash_pass = hashlib.sha3_256()
+        hash_security = hash_pass.update(password)
+        hash_security_two = hash_pass.hexdigest()
+        query = "INSERT INTO usuario (email,username,password) values (%s, %s, %s)"
+        get_data = (email, user_name, hash_security_two)
         if email == "" and user_name == "" and password == "":
             messagebox.showerror(title="Incomplete data", message="Fill in the data")
         else:
