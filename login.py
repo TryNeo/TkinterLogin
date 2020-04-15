@@ -81,14 +81,13 @@ class MainWindow(Usuario):
                 pass
         try:
             if hash_pass.hexdigest() == valid:
-                if validate:
-                    messagebox.showinfo(title="Login Successful", message='Correct username and password')
-                    main.destroy()
+                messagebox.showinfo(title="Login Successful", message='Correct username and password')
+                main.destroy()
 
-                    ####MENU PRINCIPAL####
-                    main_p = tk.Tk()
-                    window_p = MainWindowP(main_p)
-                    main_p.mainloop()
+                ####MENU PRINCIPAL####
+                main_p = tk.Tk()
+                window_p = MainWindowP(main_p)
+                main_p.mainloop()
         except NameError as error:
             messagebox.showerror(title="Incorrect Login", message='Incorrect user or password')
 
