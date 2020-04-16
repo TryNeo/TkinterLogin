@@ -5,5 +5,5 @@ create table usuario(
 id_usuario int auto_increment,
 email varchar(50),
 username varchar(50),
-password varchar(30),
+password TEXT,
 primary key(id_usuario));
