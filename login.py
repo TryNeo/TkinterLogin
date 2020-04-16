@@ -3,7 +3,7 @@
 
 import tkinter as tk
 import mysql.connector
-import hashlib
+import bcrypt
 from PIL import Image, ImageTk
 from dominio.entidades import *
 from menu.principal import *
@@ -63,34 +63,28 @@ class MainWindow(Usuario):
             print("connection successfully")
 
     def login(self):
-        global valid
         self.connecting()
         user_name = self.username.get()
-        password = self.password.get()
-        password = self.password.get().encode('utf-8')
-        ####HASH##
-        hash_pass = hashlib.sha3_256()
-        hash_security = hash_pass.update(password)
-        hash_security_two = hash_pass.hexdigest()
-        query = "SELECT * FROM usuario WHERE username = %s and password = %s"
-        get_data = (user_name, hash_security_two)
+        query = "SELECT username,password FROM  usuario where username = %s"
+        get_data = (user_name,)
         self.mysqlcursor.execute(query, get_data)
-        validate = self.mysqlcursor.fetchall()
-        for val in validate:
-            for valid in val:
-                pass
-        try:
-            if hash_pass.hexdigest() == valid:
-                messagebox.showinfo(title="Login Successful", message='Correct username and password')
-                main.destroy()
-
-                ####MENU PRINCIPAL####
-                main_p = tk.Tk()
-                window_p = MainWindowP(main_p)
-                main_p.mainloop()
-        except NameError as error:
+        valid = self.mysqlcursor.fetchall()
+        lista = []
+        if valid == lista:
             messagebox.showerror(title="Incorrect Login", message='Incorrect user or password')
-
+        else:
+            for validate in valid:
+                password = self.password.get()
+                if bcrypt.checkpw(password.encode('utf-8'), validate[1].encode('utf-8')):
+                    messagebox.showinfo(title="Login Successful", message='Correct username and password')
+                    main.destroy()
+                    ####MENU PRINCIPAL####
+                    main_p = tk.Tk()
+                    window_p = MainWindowP(main_p)
+                    main_p.mainloop()
+                else:
+                    messagebox.showerror(title="Incorrect Login", message='Incorrect user or password')
+                    
     def registry(self):
         self.registry_win = tk.Toplevel()
         self.registry_win.title('Registry')
@@ -123,16 +117,14 @@ class MainWindow(Usuario):
         self.username.set("")
         self.password.set("")
 
-    def register_sql(self):
+    def register_sql(self):        
         self.connecting()
         email = self.email.get()
         user_name = self.username.get()
         password = self.password.get().encode('utf-8')
-        hash_pass = hashlib.sha3_256()
-        hash_security = hash_pass.update(password)
-        hash_security_two = hash_pass.hexdigest()
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
         query = "INSERT INTO usuario (email,username,password) values (%s, %s, %s)"
-        get_data = (email, user_name, hash_security_two)
+        get_data = (email, user_name, hashed_password)
         if email == "" and user_name == "" and password == "":
             messagebox.showerror(title="Incomplete data", message="Fill in the data")
         else:
